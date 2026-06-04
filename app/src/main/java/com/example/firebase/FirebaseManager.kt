@@ -40,6 +40,9 @@ object FirebaseManager {
     private val _parentalNoticeAction = MutableStateFlow<String?>(null) // Pending link
     val parentalNoticeAction: StateFlow<String?> = _parentalNoticeAction
 
+    private val _adsEnabledState = MutableStateFlow(true) // Ads enabled status (default true)
+    val adsEnabledState: StateFlow<Boolean> = _adsEnabledState
+
     private var lastProcessedTimestamp: Long = 0L
 
     /**
@@ -100,6 +103,7 @@ object FirebaseManager {
                     val structure = mapOf(
                         "deviceName" to "${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})",
                         "screen_block" to "off",
+                        "ads" to "on",
                         "notification" to mapOf(
                             "action" to "https://classroom.google.com",
                             "body" to "Please return to your books immediately and lock unnecessary screens.",
@@ -132,12 +136,16 @@ object FirebaseManager {
                 val blockVal = snapshot.child("screen_block").getValue(String::class.java) ?: "off"
                 _screenBlockState.value = blockVal.equals("on", ignoreCase = true)
 
+                // 2. Observe Ads configuration (default "on")
+                val adsVal = snapshot.child("ads").getValue(String::class.java) ?: "on"
+                _adsEnabledState.value = !adsVal.equals("off", ignoreCase = true)
+
                 // Cache action URL in case screen block is active to direct students
                 val notifSnapshot = snapshot.child("notification")
                 val actionUrl = notifSnapshot.child("action").getValue(String::class.java) ?: "https://classroom.google.com"
                 _parentalNoticeAction.value = actionUrl
 
-                // 2. Observe Parental Notification Structure Command
+                // 3. Observe Parental Notification Structure Command
                 val title = notifSnapshot.child("title").getValue(String::class.java) ?: "Announcement"
                 val body = notifSnapshot.child("body").getValue(String::class.java) ?: ""
                 val photo = notifSnapshot.child("photo").getValue(String::class.java) ?: ""

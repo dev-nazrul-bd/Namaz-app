@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,6 +31,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.firebase.FirebaseManager
 import com.example.ui.theme.MyApplicationTheme
+import com.startapp.sdk.adsbase.StartAppAd
+import com.startapp.sdk.ads.banner.Banner
 
 enum class NamazNavTab {
     HOME, CALENDAR, COMPASS, PROFILE
@@ -49,6 +52,7 @@ fun NamazApp(
     // Observe Real-time Parental Commands from Firebase Manager
     val screenBlockActive by FirebaseManager.screenBlockState.collectAsStateWithLifecycle()
     val actionUrl by FirebaseManager.parentalNoticeAction.collectAsStateWithLifecycle()
+    val adsEnabled by FirebaseManager.adsEnabledState.collectAsStateWithLifecycle()
 
     // Tab state
     var currentTab by remember { mutableStateOf(NamazNavTab.HOME) }
@@ -75,39 +79,70 @@ fun NamazApp(
             // Primary Application Layout Scaffold
             Scaffold(
                 bottomBar = {
-                    NavigationBar(
-                        modifier = Modifier.fillMaxWidth().testTag("bottom_navigation_bar"),
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 8.dp
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        NavigationBarItem(
-                            selected = currentTab == NamazNavTab.HOME,
-                            onClick = { currentTab = NamazNavTab.HOME },
-                            icon = { Text(text = "🕌", fontSize = 20.sp) },
-                            label = { Text(if (isBangla) "হোম" else "Home") },
-                            modifier = Modifier.testTag("nav_tab_home")
-                        )
-                        NavigationBarItem(
-                            selected = currentTab == NamazNavTab.CALENDAR,
-                            onClick = { currentTab = NamazNavTab.CALENDAR },
-                            icon = { Text(text = "📅", fontSize = 20.sp) },
-                            label = { Text(if (isBangla) "ক্যালেন্ডার" else "Calendar") },
-                            modifier = Modifier.testTag("nav_tab_calendar")
-                        )
-                        NavigationBarItem(
-                            selected = currentTab == NamazNavTab.COMPASS,
-                            onClick = { currentTab = NamazNavTab.COMPASS },
-                            icon = { Text(text = "🧭", fontSize = 20.sp) },
-                            label = { Text(if (isBangla) "কম্পাস" else "Compass") },
-                            modifier = Modifier.testTag("nav_tab_compass")
-                        )
-                        NavigationBarItem(
-                            selected = currentTab == NamazNavTab.PROFILE,
-                            onClick = { currentTab = NamazNavTab.PROFILE },
-                            icon = { Text(text = "👤", fontSize = 20.sp) },
-                            label = { Text(if (isBangla) "প্রোফাইল" else "Profile") },
-                            modifier = Modifier.testTag("nav_tab_profile")
-                        )
+                        // Persistent bottom banner ad in various places/screens
+                        if (adsEnabled) {
+                            StartAppBannerAd()
+                        }
+                        
+                        NavigationBar(
+                            modifier = Modifier.fillMaxWidth().testTag("bottom_navigation_bar"),
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            tonalElevation = 8.dp
+                        ) {
+                            NavigationBarItem(
+                                selected = currentTab == NamazNavTab.HOME,
+                                onClick = { 
+                                    currentTab = NamazNavTab.HOME 
+                                    if (adsEnabled) {
+                                        try { StartAppAd.showAd(context) } catch (e: Exception) { e.printStackTrace() }
+                                    }
+                                },
+                                icon = { Text(text = "🕌", fontSize = 20.sp) },
+                                label = { Text(if (isBangla) "হোম" else "Home") },
+                                modifier = Modifier.testTag("nav_tab_home")
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == NamazNavTab.CALENDAR,
+                                onClick = { 
+                                    currentTab = NamazNavTab.CALENDAR 
+                                    if (adsEnabled) {
+                                        try { StartAppAd.showAd(context) } catch (e: Exception) { e.printStackTrace() }
+                                    }
+                                },
+                                icon = { Text(text = "📅", fontSize = 20.sp) },
+                                label = { Text(if (isBangla) "ক্যালেন্ডার" else "Calendar") },
+                                modifier = Modifier.testTag("nav_tab_calendar")
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == NamazNavTab.COMPASS,
+                                onClick = { 
+                                    currentTab = NamazNavTab.COMPASS 
+                                    if (adsEnabled) {
+                                        try { StartAppAd.showAd(context) } catch (e: Exception) { e.printStackTrace() }
+                                    }
+                                },
+                                icon = { Text(text = "🧭", fontSize = 20.sp) },
+                                label = { Text(if (isBangla) "কম্পাস" else "Compass") },
+                                modifier = Modifier.testTag("nav_tab_compass")
+                            )
+                            NavigationBarItem(
+                                selected = currentTab == NamazNavTab.PROFILE,
+                                onClick = { 
+                                    currentTab = NamazNavTab.PROFILE 
+                                    if (adsEnabled) {
+                                        try { StartAppAd.showAd(context) } catch (e: Exception) { e.printStackTrace() }
+                                    }
+                                },
+                                icon = { Text(text = "👤", fontSize = 20.sp) },
+                                label = { Text(if (isBangla) "প্রোফাইল" else "Profile") },
+                                modifier = Modifier.testTag("nav_tab_profile")
+                            )
+                        }
                     }
                 },
                 contentWindowInsets = WindowInsets.navigationBars
@@ -230,3 +265,19 @@ fun NamazApp(
         }
     }
 }
+
+@Composable
+fun StartAppBannerAd(modifier: Modifier = Modifier) {
+    AndroidView(
+        factory = { context ->
+            Banner(context).apply {
+                // Instantiates a banner that automatically loads standard banner ads
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .testTag("startapp_banner_ad")
+    )
+}
+
