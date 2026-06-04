@@ -1,0 +1,6 @@
+{
+  "name": "Namaz",
+  "description": "An offline-first Salat-tracker with localized Namaz times, Arabic/Bengali/English calendars, Qibla compass, and real-time remote commands with parental control notifications and screen block features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
