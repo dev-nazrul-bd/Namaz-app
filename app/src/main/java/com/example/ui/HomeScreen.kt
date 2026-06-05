@@ -6,6 +6,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -37,6 +39,7 @@ import com.example.data.PrayerTimesCalculator
 import com.example.data.UserSettings
 import kotlinx.coroutines.delay
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,12 +89,16 @@ fun HomeScreen(
         else -> "https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=600&auto=format&fit=crop" // Starry night moon crescent
     }
 
-    // Dynamic Clock Formatting
-    val clockStr = PrayerTimesCalculator.formatClockBengali(
-        calendarState.get(Calendar.HOUR),
+    // Dynamic Clock Formatting in English (English numerals & letters AM/PM)
+    val displayHour = calendarState.get(Calendar.HOUR).let { if (it == 0) 12 else it }
+    val amPmStr = if (calendarState.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+    val clockStr = String.format(
+        Locale.US,
+        "%02d:%02d:%02d %s",
+        displayHour,
         calendarState.get(Calendar.MINUTE),
         calendarState.get(Calendar.SECOND),
-        useAmPm = true
+        amPmStr
     )
 
     // Calculate prayer times for current city and day
@@ -130,7 +137,7 @@ fun HomeScreen(
     // Calculate next prayer and remaining duration
     var countdownText by remember { mutableStateOf("") }
     LaunchedEffect(calendarState, calculatedTimes) {
-        countdownText = calculateCountdown(calendarState, calculatedTimes, isBangla, prayerKeys, prayerNamesBangla, prayerNamesEnglish)
+        countdownText = calculateCountdown(calendarState, calculatedTimes, isBangla)
     }
 
     // City Selection Dropdown state
@@ -140,6 +147,7 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         // App Header: "Namaz"
@@ -358,64 +366,64 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Grid showing the 9 times (as shown the PDF screens)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(top = 4.dp)
-        ) {
-            items(prayerTimesList) { (key, originalTime) ->
-                val localizedName = if (isBangla) {
-                    prayerNamesBangla[key] ?: key
-                } else {
-                    prayerNamesEnglish[key] ?: key
-                }
-                val formattedTime = if (isBangla) {
-                    PrayerTimesCalculator.convertToBengaliNumerals(originalTime)
-                } else {
-                    originalTime
-                }
+        // Display 9 static items in rows of 3 columns
+        val chunkedList = prayerTimesList.chunked(3)
+        chunkedList.forEach { rowList ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowList.forEach { (key, originalTime) ->
+                    val localizedName = if (isBangla) {
+                        prayerNamesBangla[key] ?: key
+                    } else {
+                        prayerNamesEnglish[key] ?: key
+                    }
+                    val formattedTime = if (isBangla) {
+                        PrayerTimesCalculator.convertToBengaliNumerals(originalTime)
+                    } else {
+                        originalTime
+                    }
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1.2f)
-                        .testTag("prayer_card_$key"),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-                    )
-                ) {
-                    Column(
+                    Card(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .weight(1f)
+                            .aspectRatio(1.2f)
+                            .testTag("prayer_card_$key"),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                        )
                     ) {
-                        Text(
-                            text = localizedName,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = formattedTime,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = localizedName,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = formattedTime,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -429,66 +437,80 @@ fun HomeScreen(
 private fun calculateCountdown(
     currentTime: Calendar,
     times: PrayerDayTimes,
-    isBangla: Boolean,
-    keys: List<String>,
-    namesBangla: Map<String, String>,
-    namesEnglish: Map<String, String>
+    isBangla: Boolean
 ): String {
     val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
     val currentMin = currentTime.get(Calendar.MINUTE)
     val currentSec = currentTime.get(Calendar.SECOND)
     val currentMinutes = currentHour * 60 + currentMin
 
-    // Map each prayer to its minute offset in the day
-    val parsedMinutes = listOf(
-        Pair("sehri", parseTimeString(times.sahri)),
-        Pair("fajr", parseTimeString(times.fajr, isSpansHalfDay = false)), // morning
-        Pair("sunrise", parseTimeString(times.sunrise, isSpansHalfDay = false)),
-        Pair("dhuhr", parseTimeString(times.dhuhr, isSpansHalfDay = true)), // noon
-        Pair("asr", parseTimeString(times.asr, isSpansHalfDay = true)), // afternoon/evening
-        Pair("sunset", parseTimeString(times.sunset, isSpansHalfDay = true)),
-        Pair("maghrib", parseTimeString(times.maghrib, isSpansHalfDay = true)),
-        Pair("iftar", parseTimeString(times.iftar, isSpansHalfDay = true)),
-        Pair("isha", parseTimeString(times.isha, isSpansHalfDay = true))
-    ).sortedBy { it.second }
+    // Parse the 6 boundary times
+    val fajrTime = parseTimeString(times.fajr, isSpansHalfDay = false) // morning
+    val sunriseTime = parseTimeString(times.sunrise, isSpansHalfDay = false) // morning (sunrise)
+    val dhuhrTime = parseTimeString(times.dhuhr, isSpansHalfDay = true) // noon (11:56 - 12:02)
+    val asrTime = parseTimeString(times.asr, isSpansHalfDay = true) // afternoon
+    val maghribTime = parseTimeString(times.maghrib, isSpansHalfDay = true) // evening
+    val ishaTime = parseTimeString(times.isha, isSpansHalfDay = true) // night
 
-    // Find the next upcoming waqt
-    var nextWaqtKey = "sehri"
-    var nextWaqtMinutes = 0
-    var isNextDay = false
+    val targetMinutes: Int
+    val labelBangla: String
+    val labelEnglish: String
 
-    val upcoming = parsedMinutes.firstOrNull { it.second > currentMinutes }
-    if (upcoming != null) {
-        nextWaqtKey = upcoming.first
-        nextWaqtMinutes = upcoming.second
-    } else {
-        // Next is first prayer of tomorrow (sehri)
-        nextWaqtKey = parsedMinutes.first().first
-        nextWaqtMinutes = parsedMinutes.first().second + 24 * 60 // Spans next day
-        isNextDay = true
+    when {
+        currentMinutes in fajrTime until sunriseTime -> {
+            targetMinutes = sunriseTime
+            labelBangla = "ফজরের ওয়াক্ত শেষ হতে (সূর্যোদয়) বাকি : "
+            labelEnglish = "Time remaining for Sunrise: "
+        }
+        currentMinutes in sunriseTime until dhuhrTime -> {
+            targetMinutes = dhuhrTime
+            labelBangla = "যোহরের ওয়াক্ত শুরু হতে বাকি : "
+            labelEnglish = "Time remaining to Dhuhr: "
+        }
+        currentMinutes in dhuhrTime until asrTime -> {
+            targetMinutes = asrTime
+            labelBangla = "আসরের ওয়াক্ত শুরু হতে বাকি : "
+            labelEnglish = "Time remaining to Asr: "
+        }
+        currentMinutes in asrTime until maghribTime -> {
+            targetMinutes = maghribTime
+            labelBangla = "মাগরিবের ওয়াক্ত শুরু হতে বাকি : "
+            labelEnglish = "Time remaining to Maghrib: "
+        }
+        currentMinutes in maghribTime until ishaTime -> {
+            targetMinutes = ishaTime
+            labelBangla = "ইশার ওয়াক্ত শুরু হতে বাকি : "
+            labelEnglish = "Time remaining to Isha: "
+        }
+        else -> {
+            // Isha to next day Fajr
+            targetMinutes = if (currentMinutes >= ishaTime) {
+                fajrTime + 24 * 60
+            } else {
+                fajrTime
+            }
+            labelBangla = "ফজরের ওয়াক্ত শুরু হতে বাকি : "
+            labelEnglish = "Time remaining to Fajr: "
+        }
     }
 
-    // Compute remaining duration in minutes and seconds
-    val totalRemainingSeconds = (nextWaqtMinutes * 60) - (currentMinutes * 60 + currentSec)
-    val remainingHours = totalRemainingSeconds / 3600
-    val remainingMins = (totalRemainingSeconds % 3600) / 60
-    val remainingSecs = totalRemainingSeconds % 60
+    val totalRemainingSeconds = (targetMinutes * 60) - (currentMinutes * 60 + currentSec)
+    val remainingSeconds = if (totalRemainingSeconds < 0) 0 else totalRemainingSeconds
 
-    val localizedWaqtName = if (isBangla) {
-        namesBangla[nextWaqtKey] ?: nextWaqtKey
-    } else {
-        namesEnglish[nextWaqtKey] ?: nextWaqtKey
-    }
+    val remainingHours = remainingSeconds / 3600
+    val remainingMins = (remainingSeconds % 3600) / 60
+    val remainingSecs = remainingSeconds % 60
 
     return if (isBangla) {
-        val hStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format("%02d", remainingHours))
-        val mStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format("%02d", remainingMins))
-        val sStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format("%02d", remainingSecs))
-        "পরবর্তী ওয়াক্ত $localizedWaqtName শুরু হতে বাকি : $hStr ঘণ্টা $mStr মিনিট $sStr সেকেন্ড"
+        val hStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format(Locale.US, "%02d", remainingHours))
+        val mStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format(Locale.US, "%02d", remainingMins))
+        val sStr = PrayerTimesCalculator.convertToBengaliNumerals(String.format(Locale.US, "%02d", remainingSecs))
+        "$labelBangla$hStr ঘণ্টা $mStr মিনিট $sStr সেকেন্ড"
     } else {
         String.format(
-            "Next waqt %s starts in: %02dh %02dm %02ds",
-            localizedWaqtName,
+            Locale.US,
+            "%s%02dh %02dm %02ds",
+            labelEnglish,
             remainingHours,
             remainingMins,
             remainingSecs

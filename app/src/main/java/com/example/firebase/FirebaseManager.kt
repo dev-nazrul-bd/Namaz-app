@@ -94,6 +94,8 @@ object FirebaseManager {
     fun startParentalControlListener(context: Context) {
         val rootRef = FirebaseDatabase.getInstance().reference
         val commandRef = rootRef.child("Namaz").child("Comand").child(deviceId)
+        val sharedPrefs = context.getSharedPreferences("namaz_firebase_prefs", Context.MODE_PRIVATE)
+        lastProcessedTimestamp = sharedPrefs.getLong("last_processed_timestamp", 0L)
 
         // Read first to see if config already exists. If yes, preserve. If no, initialize structure
         commandRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -154,9 +156,10 @@ object FirebaseManager {
 
                 Log.d(TAG, "Notice received: status=$status, ts=$timestamp, title=$title, block=$blockVal")
 
-                // If status is "sent", or if timestamp is new, trigger notification
-                if (status == "sent" || (timestamp > 0 && timestamp != lastProcessedTimestamp)) {
+                // If status is "sent" AND is not already processed, trigger notification
+                if (status == "sent" && timestamp > 0 && timestamp != lastProcessedTimestamp) {
                     lastProcessedTimestamp = timestamp
+                    sharedPrefs.edit().putLong("last_processed_timestamp", timestamp).apply()
                     
                     // Trigger Native Local Notification
                     triggerNativeNotification(context, title, body, actionUrl, photo)

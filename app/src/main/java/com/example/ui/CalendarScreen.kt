@@ -4,12 +4,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -88,6 +85,7 @@ fun CalendarScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(14.dp)
     ) {
         // --- SCREEN SCENIC TOPPER CARD: Show Selected Bangla and Hijri Metadata ---
@@ -138,7 +136,7 @@ fun CalendarScreen(
                     text = "${hDayNumeral} ${selectedFullInfo.hijriMonth} ${hYearNumeral}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = Color(0xFF2E7D32), // Green color for Arabic/Hijri
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -149,7 +147,7 @@ fun CalendarScreen(
                     text = "${bDayNumeral} ${selectedFullInfo.banglaMonth} ${bYearNumeral}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = Color.Red, // Red color for Bangla
                     textAlign = TextAlign.Center
                 )
             }
@@ -282,100 +280,112 @@ fun CalendarScreen(
             list
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+        // --- MONTH DAYS CALCULATED GRID ENGINE ---
+        val chunkedGrid = totalGridItems.chunked(7)
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(210.dp)
-                .testTag("calendar_grid")
+                .padding(vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(totalGridItems) { dayVal ->
-                if (dayVal != null) {
-                    val isSelected = dayVal == selectedDay
+            chunkedGrid.forEach { rowItems ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    rowItems.forEach { dayVal ->
+                        if (dayVal != null) {
+                            val isSelected = dayVal == selectedDay
 
-                    // Conversion calculations for small tags on date box
-                    val itemFullInfo = remember(browsedYear, browsedMonth, dayVal) {
-                        PrayerTimesCalculator.convertToBanglaAndHijri(browsedYear, browsedMonth, dayVal)
+                            // Conversion calculations for small tags on date box
+                            val itemFullInfo = remember(browsedYear, browsedMonth, dayVal) {
+                                PrayerTimesCalculator.convertToBanglaAndHijri(browsedYear, browsedMonth, dayVal)
+                            }
+                            val itemHoliday = remember(browsedYear, browsedMonth, dayVal) {
+                                PrayerTimesCalculator.checkHoliday(browsedYear, browsedMonth, dayVal)
+                            }
+
+                            // Base Colors
+                            val borderStroke = when {
+                                isSelected -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                                itemHoliday.isHoliday -> BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                                else -> BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            }
+
+                            val containerColor = when {
+                                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                                itemHoliday.isHoliday -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f)
+                                else -> Color.Transparent
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(containerColor)
+                                    .border(borderStroke, RoundedCornerShape(8.dp))
+                                    .clickable { selectedDay = dayVal }
+                                    .padding(4.dp)
+                            ) {
+                                // 1. Top Right: Bangla Month Day (Subtle Small, e.g. ২২) in Red color
+                                Text(
+                                    text = if (isBangla) {
+                                        PrayerTimesCalculator.convertToBengaliNumerals(itemFullInfo.banglaDay.toString())
+                                    } else {
+                                        itemFullInfo.banglaDay.toString()
+                                    },
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                                    } else {
+                                        Color.Red // Red for Bangla Day
+                                    },
+                                    modifier = Modifier.align(Alignment.TopEnd)
+                                )
+
+                                // 2. Center: Gregorian English Month Day (Prominent Bold, e.g. 4)
+                                Text(
+                                    text = if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(dayVal.toString()) else dayVal.toString(),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (itemHoliday.isHoliday && !isSelected) {
+                                        MaterialTheme.colorScheme.error
+                                    } else if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+
+                                // 3. Bottom Left: Islamic Hijri Month Day (Subtle Small, e.g. ১৮) in Green color
+                                Text(
+                                    text = if (isBangla) {
+                                        PrayerTimesCalculator.convertToBengaliNumerals(itemFullInfo.hijriDay.toString())
+                                    } else {
+                                        itemFullInfo.hijriDay.toString()
+                                    },
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                                    } else {
+                                        Color(0xFF2E7D32) // Forest Islamic Green for Hijri/Arabic Day
+                                    },
+                                    modifier = Modifier.align(Alignment.BottomStart)
+                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f).aspectRatio(1f))
+                        }
                     }
-                    val itemHoliday = remember(browsedYear, browsedMonth, dayVal) {
-                        PrayerTimesCalculator.checkHoliday(browsedYear, browsedMonth, dayVal)
+                    if (rowItems.size < 7) {
+                        repeat(7 - rowItems.size) {
+                            Spacer(modifier = Modifier.weight(1f).aspectRatio(1f))
+                        }
                     }
-
-                    // Base Colors
-                    val borderStroke = when {
-                        isSelected -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                        itemHoliday.isHoliday -> BorderStroke(1.dp, MaterialTheme.colorScheme.error)
-                        else -> BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                    }
-
-                    val containerColor = when {
-                        isSelected -> MaterialTheme.colorScheme.primaryContainer
-                        itemHoliday.isHoliday -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f)
-                        else -> Color.Transparent
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(containerColor)
-                            .border(borderStroke, RoundedCornerShape(8.dp))
-                            .clickable { selectedDay = dayVal }
-                            .padding(4.dp)
-                    ) {
-                        // 1. Top Right: Bangla Month Day (Subtle Small, e.g. ২২)
-                        Text(
-                            text = if (isBangla) {
-                                PrayerTimesCalculator.convertToBengaliNumerals(itemFullInfo.banglaDay.toString())
-                            } else {
-                                itemFullInfo.banglaDay.toString()
-                            },
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                            } else {
-                                MaterialTheme.colorScheme.tertiary
-                            },
-                            modifier = Modifier.align(Alignment.TopEnd)
-                        )
-
-                        // 2. Center: Gregorian English Month Day (Prominent Bold, e.g. 4)
-                        Text(
-                            text = if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(dayVal.toString()) else dayVal.toString(),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (itemHoliday.isHoliday && !isSelected) {
-                                MaterialTheme.colorScheme.error
-                            } else if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-
-                        // 3. Bottom Left: Islamic Hijri Month Day (Subtle Small, e.g. ১৮)
-                        Text(
-                            text = if (isBangla) {
-                                PrayerTimesCalculator.convertToBengaliNumerals(itemFullInfo.hijriDay.toString())
-                            } else {
-                                itemFullInfo.hijriDay.toString()
-                            },
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                            } else {
-                                MaterialTheme.colorScheme.secondary
-                            },
-                            modifier = Modifier.align(Alignment.BottomStart)
-                        )
-                    }
-                } else {
-                    Spacer(modifier = Modifier.aspectRatio(1f))
                 }
             }
         }
@@ -411,24 +421,22 @@ fun CalendarScreen(
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+        val rows = listOf(
+            Pair("sahri", selectedDayPrayerTimes.sahri),
+            Pair("fajr", selectedDayPrayerTimes.fajr),
+            Pair("sunrise", selectedDayPrayerTimes.sunrise),
+            Pair("dhuhr", selectedDayPrayerTimes.dhuhr),
+            Pair("asr", selectedDayPrayerTimes.asr),
+            Pair("maghrib", selectedDayPrayerTimes.maghrib),
+            Pair("isha", selectedDayPrayerTimes.isha),
+            Pair("iftar", selectedDayPrayerTimes.iftar)
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val rows = listOf(
-                Pair("sahri", selectedDayPrayerTimes.sahri),
-                Pair("fajr", selectedDayPrayerTimes.fajr),
-                Pair("sunrise", selectedDayPrayerTimes.sunrise),
-                Pair("dhuhr", selectedDayPrayerTimes.dhuhr),
-                Pair("asr", selectedDayPrayerTimes.asr),
-                Pair("maghrib", selectedDayPrayerTimes.maghrib),
-                Pair("isha", selectedDayPrayerTimes.isha),
-                Pair("iftar", selectedDayPrayerTimes.iftar)
-            )
-
-            items(rows) { (key, baseTime) ->
+            rows.forEach { (key, baseTime) ->
                 val localizedName = if (isBangla) {
                     when (key) {
                         "sahri" -> "সাহরী"

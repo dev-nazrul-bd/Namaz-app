@@ -3,6 +3,9 @@
     <item
         android:width="72dp"
         android:height="72dp"
-        android:drawable="@drawable/ic_app_logo_1780583848660"
-        android:gravity="center" />
+        android:gravity="center">
+        <bitmap
+            android:src="@drawable/namaz_icon_1780617861805"
+            android:gravity="center" />
+    </item>
 </layer-list>

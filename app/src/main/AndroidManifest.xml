@@ -26,6 +26,31 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Widgets -->
+        <receiver
+            android:name=".ui.widget.PrayerWidgetProvider"
+            android:label="🕌 নামাজ সময়সূচী (Prayer Times)"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".ui.widget.CalendarWidgetProvider"
+            android:label="📅 নামাজ ক্যালেন্ডার (Prayer Calendar)"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/calendar_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

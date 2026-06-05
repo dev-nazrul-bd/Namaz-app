@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <!-- Header Section -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🕌 নামাজ সময়সূচী"
+            android:textColor="#E5A11E"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="Dhaka | ঢাকা"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- Date Row -->
+    <TextView
+        android:id="@+id/widget_date_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="৪ জুন ২০২৬ | ১৮ জিলহজ্জ ১৪৪৭"
+        android:textColor="#8BBDAF"
+        android:textSize="12sp"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Countdown Center Banner -->
+    <LinearLayout
+        android:id="@+id/widget_countdown_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#154B3E"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:gravity="center"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/widget_countdown_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ফজরের ওয়াক্ত শেষ হতে (সূর্যোদয়) বাকি :"
+            android:textColor="#FFCE75"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_countdown_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="০১ ঘণ্টা ৪২ মিনিট ৩০ সেকেন্ড"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Grid of 3 Rows of Main Times (using horizontal & vertical Linear Layouts) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- First Row: Sahri, Fajr, Sunrise -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp">
+
+                <TextView
+                    android:id="@+id/title_sehri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="সাহরী"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_sehri"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৩:৫০"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_fajr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ফজর"
+                    android:textColor="#5CE6E6"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_fajr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৪:০০"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_sunrise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="সূর্যোদয়"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_sunrise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৫:১১"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Second Row: Dhuhr, Asr, Sunset -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp">
+
+                <TextView
+                    android:id="@+id/title_dhuhr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="যোহর"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_dhuhr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="১২:০০"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_asr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="আসর"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_asr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৩:১৮"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_sunset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="সূর্যাস্ত"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_sunset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৬:৪৮"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Third Row: Iftar, Maghrib, Isha -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp">
+
+                <TextView
+                    android:id="@+id/title_iftar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ইফতার"
+                    android:textColor="#FFA000"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_iftar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৬:৪৮"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginEnd="3dp"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_maghrib"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="মাগরিব"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_maghrib"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৬:৪৮"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/widget_item_bg"
+                android:orientation="vertical"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_marginStart="3dp">
+
+                <TextView
+                    android:id="@+id/title_isha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="এশা"
+                    android:textColor="#8BBDAF"
+                    android:textSize="9sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/time_isha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="৮:০২"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
