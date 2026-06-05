@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
     
     // Initialize StartApp SDK
     try {
-      StartAppSDK.init(this, "205942114", true)
+      StartAppSDK.init(this, "205942114", false)
       StartAppSDK.enableReturnAds(false) // optional: disable return ads on app resume for better UX
     } catch (e: Exception) {
       e.printStackTrace()
