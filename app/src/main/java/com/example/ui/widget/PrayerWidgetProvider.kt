@@ -193,7 +193,7 @@ class PrayerWidgetProvider : AppWidgetProvider() {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        views.setOnClickPendingIntent(R.id.widget_countdown_container, pendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
         // Push update to homescreen manager
         appWidgetManager.updateAppWidget(appWidgetId, views)

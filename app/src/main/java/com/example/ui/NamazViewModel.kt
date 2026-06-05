@@ -62,6 +62,7 @@ class NamazViewModel(application: Application) : AndroidViewModel(application) {
     fun saveSettings(updatedSettings: UserSettings) {
         viewModelScope.launch {
             repository.saveSettings(updatedSettings)
+            updateWidgets()
         }
     }
 
@@ -71,6 +72,36 @@ class NamazViewModel(application: Application) : AndroidViewModel(application) {
     fun saveCompletion(updatedCompletion: PrayerCompletion) {
         viewModelScope.launch {
             repository.savePrayerCompletion(updatedCompletion)
+            updateWidgets()
+        }
+    }
+
+    /**
+     * Broadcasts intent to update prayer and calendar app widgets instantly.
+     */
+    private fun updateWidgets() {
+        try {
+            val app = getApplication<Application>()
+            
+            val intentPrayer = android.content.Intent(app, com.example.ui.widget.PrayerWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                val ids = android.appwidget.AppWidgetManager.getInstance(app).getAppWidgetIds(
+                    android.content.ComponentName(app, com.example.ui.widget.PrayerWidgetProvider::class.java)
+                )
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            }
+            app.sendBroadcast(intentPrayer)
+
+            val intentCalendar = android.content.Intent(app, com.example.ui.widget.CalendarWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                val ids = android.appwidget.AppWidgetManager.getInstance(app).getAppWidgetIds(
+                    android.content.ComponentName(app, com.example.ui.widget.CalendarWidgetProvider::class.java)
+                )
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            }
+            app.sendBroadcast(intentCalendar)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

@@ -134,12 +134,6 @@ fun HomeScreen(
         Pair("isha", calculatedTimes.isha)
     )
 
-    // Calculate next prayer and remaining duration
-    var countdownText by remember { mutableStateOf("") }
-    LaunchedEffect(calendarState, calculatedTimes) {
-        countdownText = calculateCountdown(calendarState, calculatedTimes, isBangla)
-    }
-
     // City Selection Dropdown state
     var dropdownExpanded by remember { mutableStateOf(false) }
 
@@ -328,39 +322,6 @@ fun HomeScreen(
                         )
                     }
                 }
-            }
-        }
-
-        // Live Countdown Card (Ticking Status Panel)
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-            ),
-            shape = RoundedCornerShape(10.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Timer info",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = countdownText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.weight(1f)
-                )
             }
         }
 

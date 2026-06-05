@@ -184,7 +184,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        views.setOnClickPendingIntent(R.id.calendar_widget_month, pendingIntent)
+        views.setOnClickPendingIntent(R.id.calendar_widget_root, pendingIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
