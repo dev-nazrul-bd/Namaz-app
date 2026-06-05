@@ -19,14 +19,36 @@ import java.util.Calendar
 class CalendarWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        val pendingResult = goAsync()
         val coroutineScope = CoroutineScope(Dispatchers.IO)
         coroutineScope.launch {
-            val dao = NamazDatabase.getDatabase(context).namazDao()
-            val settings = dao.getSettings() ?: UserSettings()
-            
-            launch(Dispatchers.Main) {
+            try {
+                val dao = NamazDatabase.getDatabase(context).namazDao()
+                val settings = dao.getSettings() ?: UserSettings()
+                
                 for (appWidgetId in appWidgetIds) {
-                    updateAppWidget(context, appWidgetManager, appWidgetId, settings)
+                    try {
+                        updateAppWidget(context, appWidgetManager, appWidgetId, settings)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Robust fallback with default settings if database access fails
+                val fallbackSettings = UserSettings()
+                for (appWidgetId in appWidgetIds) {
+                    try {
+                        updateAppWidget(context, appWidgetManager, appWidgetId, fallbackSettings)
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            } finally {
+                try {
+                    pendingResult?.finish()
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
