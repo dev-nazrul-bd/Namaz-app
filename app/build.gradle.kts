@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -26,11 +28,43 @@ android {
       val envPath = System.getenv("KEYSTORE_PATH")
       val keystorePath = if (!envPath.isNullOrEmpty()) envPath else "${rootDir}/debug.keystore"
       
-      if (file(keystorePath).exists()) {
-        storeFile = file(keystorePath)
-      } else {
-        storeFile = file("${rootDir}/debug.keystore")
+      val ksFile = file(keystorePath)
+      if (!ksFile.exists() && keystorePath.endsWith("debug.keystore")) {
+        val base64File = file("${rootDir}/debug.keystore.base64")
+        if (base64File.exists()) {
+          try {
+            val decoded = Base64.getDecoder().decode(base64File.readText().trim())
+            ksFile.writeBytes(decoded)
+            println("Successfully decoded debug.keystore.base64 from build.gradle.kts")
+          } catch (e: Exception) {
+            e.printStackTrace()
+          }
+        }
+        
+        if (!ksFile.exists()) {
+          try {
+            println("Generating fallback debug.keystore using keytool...")
+            val process = Runtime.getRuntime().exec(
+              arrayOf(
+                "keytool", "-genkeypair",
+                "-alias", "androiddebugkey",
+                "-keypass", "android",
+                "-keystore", ksFile.absolutePath,
+                "-storepass", "android",
+                "-dname", "CN=Android Debug,O=Android,C=US",
+                "-keyalg", "RSA",
+                "-keysize", "2048",
+                "-validity", "10000"
+              )
+            )
+            process.waitFor()
+          } catch (e: Exception) {
+            e.printStackTrace()
+          }
+        }
       }
+
+      storeFile = ksFile
       
       val envStorePass = System.getenv("STORE_PASSWORD")
       storePassword = if (!envStorePass.isNullOrEmpty()) envStorePass else "android"
@@ -42,7 +76,39 @@ android {
       keyPassword = if (!envKeyPass.isNullOrEmpty()) envKeyPass else "android"
     }
     create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
+      val ksFile = file("${rootDir}/debug.keystore")
+      if (!ksFile.exists()) {
+        val base64File = file("${rootDir}/debug.keystore.base64")
+        if (base64File.exists()) {
+          try {
+            val decoded = Base64.getDecoder().decode(base64File.readText().trim())
+            ksFile.writeBytes(decoded)
+          } catch (e: Exception) {
+            e.printStackTrace()
+          }
+        }
+        if (!ksFile.exists()) {
+          try {
+            val process = Runtime.getRuntime().exec(
+              arrayOf(
+                "keytool", "-genkeypair",
+                "-alias", "androiddebugkey",
+                "-keypass", "android",
+                "-keystore", ksFile.absolutePath,
+                "-storepass", "android",
+                "-dname", "CN=Android Debug,O=Android,C=US",
+                "-keyalg", "RSA",
+                "-keysize", "2048",
+                "-validity", "10000"
+              )
+            )
+            process.waitFor()
+          } catch (e: Exception) {
+            e.printStackTrace()
+          }
+        }
+      }
+      storeFile = ksFile
       storePassword = "android"
       keyAlias = "androiddebugkey"
       keyPassword = "android"
