@@ -33,31 +33,10 @@ android {
         val base64File = file("${rootDir}/debug.keystore.base64")
         if (base64File.exists()) {
           try {
-            val decoded = Base64.getDecoder().decode(base64File.readText().trim())
+            val cleanBase64 = base64File.readText().replace("\\s".toRegex(), "")
+            val decoded = Base64.getDecoder().decode(cleanBase64)
             ksFile.writeBytes(decoded)
             println("Successfully decoded debug.keystore.base64 from build.gradle.kts")
-          } catch (e: Exception) {
-            e.printStackTrace()
-          }
-        }
-        
-        if (!ksFile.exists()) {
-          try {
-            println("Generating fallback debug.keystore using keytool...")
-            val process = Runtime.getRuntime().exec(
-              arrayOf(
-                "keytool", "-genkeypair",
-                "-alias", "androiddebugkey",
-                "-keypass", "android",
-                "-keystore", ksFile.absolutePath,
-                "-storepass", "android",
-                "-dname", "CN=Android Debug,O=Android,C=US",
-                "-keyalg", "RSA",
-                "-keysize", "2048",
-                "-validity", "10000"
-              )
-            )
-            process.waitFor()
           } catch (e: Exception) {
             e.printStackTrace()
           }
@@ -81,28 +60,9 @@ android {
         val base64File = file("${rootDir}/debug.keystore.base64")
         if (base64File.exists()) {
           try {
-            val decoded = Base64.getDecoder().decode(base64File.readText().trim())
+            val cleanBase64 = base64File.readText().replace("\\s".toRegex(), "")
+            val decoded = Base64.getDecoder().decode(cleanBase64)
             ksFile.writeBytes(decoded)
-          } catch (e: Exception) {
-            e.printStackTrace()
-          }
-        }
-        if (!ksFile.exists()) {
-          try {
-            val process = Runtime.getRuntime().exec(
-              arrayOf(
-                "keytool", "-genkeypair",
-                "-alias", "androiddebugkey",
-                "-keypass", "android",
-                "-keystore", ksFile.absolutePath,
-                "-storepass", "android",
-                "-dname", "CN=Android Debug,O=Android,C=US",
-                "-keyalg", "RSA",
-                "-keysize", "2048",
-                "-validity", "10000"
-              )
-            )
-            process.waitFor()
           } catch (e: Exception) {
             e.printStackTrace()
           }
