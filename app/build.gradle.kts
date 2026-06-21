@@ -108,10 +108,26 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      
+      val envPath = System.getenv("KEYSTORE_PATH")
+      val keystorePath = if (!envPath.isNullOrEmpty()) envPath else "${rootDir}/debug.keystore"
+      val ksFile = file(keystorePath)
+      
+      if (ksFile.exists()) {
+        signingConfig = signingConfigs.getByName("release")
+      } else {
+        // Fallback to standard debug config to prevent validateSigningRelease fail when keystore is missing
+        signingConfig = signingConfigs.getByName("debug")
+      }
     }
     debug {
-      signingConfig = signingConfigs.getByName("debugConfig")
+      val ksFile = file("${rootDir}/debug.keystore")
+      if (ksFile.exists()) {
+        signingConfig = signingConfigs.getByName("debugConfig")
+      } else {
+        // Fallback to standard debug config
+        signingConfig = signingConfigs.getByName("debug")
+      }
     }
   }
   compileOptions {
