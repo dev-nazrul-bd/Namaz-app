@@ -106,8 +106,8 @@ class ClockWidgetProvider : AppWidgetProvider() {
 
         val upcomingSalah = getUpcomingSalah(localCal, times, isBangla)
 
-        // Combine date + alarm icon + upcoming salah
-        val finalSubtitleText = "$dateStr ⏰ $upcomingSalah"
+        // Combine date + clean bullet separator + upcoming salah (no alarm icon)
+        val finalSubtitleText = "$dateStr • $upcomingSalah"
         views.setTextViewText(R.id.widget_subtitle_text, finalSubtitleText)
 
         // Click to Open Main App
