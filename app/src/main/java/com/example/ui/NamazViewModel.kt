@@ -77,7 +77,7 @@ class NamazViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Broadcasts intent to update prayer and calendar app widgets instantly.
+     * Broadcasts intent to update prayer, calendar, and clock app widgets instantly.
      */
     private fun updateWidgets() {
         try {
@@ -100,6 +100,15 @@ class NamazViewModel(application: Application) : AndroidViewModel(application) {
                 putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
             }
             app.sendBroadcast(intentCalendar)
+
+            val intentClock = android.content.Intent(app, com.example.ui.widget.ClockWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                val ids = android.appwidget.AppWidgetManager.getInstance(app).getAppWidgetIds(
+                    android.content.ComponentName(app, com.example.ui.widget.ClockWidgetProvider::class.java)
+                )
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            }
+            app.sendBroadcast(intentClock)
         } catch (e: Exception) {
             e.printStackTrace()
         }

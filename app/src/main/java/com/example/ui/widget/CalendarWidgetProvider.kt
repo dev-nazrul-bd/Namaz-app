@@ -19,6 +19,17 @@ import java.util.Calendar
 class CalendarWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        // 1. Instant synchronous rendering with default settings to prevent system cold-start timeouts
+        val fallbackSettings = UserSettings()
+        for (appWidgetId in appWidgetIds) {
+            try {
+                updateAppWidget(context, appWidgetManager, appWidgetId, fallbackSettings)
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+
+        // 2. Query actual preferences and database information asynchronously
         val pendingResult = goAsync()
         val coroutineScope = CoroutineScope(Dispatchers.IO)
         coroutineScope.launch {
@@ -35,15 +46,6 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Robust fallback with default settings if database access fails
-                val fallbackSettings = UserSettings()
-                for (appWidgetId in appWidgetIds) {
-                    try {
-                        updateAppWidget(context, appWidgetManager, appWidgetId, fallbackSettings)
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    }
-                }
             } finally {
                 try {
                     pendingResult?.finish()
