@@ -33,23 +33,268 @@ data class HolidayInfo(
     val isHoliday: Boolean
 )
 
+data class AnchorRow(
+    val day: Int,
+    val sahri: String,
+    val fajr: String,
+    val dhuhr: String,
+    val asr: String,
+    val maghrib: String,
+    val isha: String,
+    val sunrise: String
+)
+
+data class AnchorMinutes(
+    val day: Int,
+    val sahri: Int,
+    val fajr: Int,
+    val dhuhr: Int,
+    val asr: Int,
+    val maghrib: Int,
+    val isha: Int,
+    val sunrise: Int
+)
+
 object PrayerTimesCalculator {
 
     // Cities configuration
     val CITIES = listOf(
-        "Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna", "Barisal", "Rangpur", "Mymensingh"
+        "Dhaka", "Gazipur", "Shariatpur", "Madaripur", "Pirojpur", "Barisal", "Jhalokati", "Barguna",
+        "Mymensingh", "Tangail", "Bagerhat", "Jamalpur", "Sherpur", "Manikganj", "Faridpur", "Gopalganj",
+        "Sirajganj", "Narail", "Khulna", "Magura", "Rajbari", "Pabna", "Satkhira", "Kushtia", "Jessore",
+        "Rangpur", "Jhenaidah", "Nilphamari", "Chuadanga", "Kurigram", "Gaibandha", "Rajshahi", "Bogra",
+        "Meherpur", "Lalmonirhat", "Chapainawabganj", "Naogaon", "Natore", "Dinajpur", "Thakurgaon", "Panchagarh",
+        "Narsingdi", "Narayanganj", "Munshiganj", "Chandpur", "Kishoreganj", "Patuakhali", "Bhola", "Laxmipur",
+        "Netrokona", "Comilla", "Brahmanbaria", "Noakhali", "Feni", "Sunamganj", "Habiganj", "Chittagong",
+        "Cox's Bazar", "Sylhet", "Moulvibazar", "Khagrachari", "Rangamati", "Bandarban"
     )
 
     val CITIES_BENGALI = mapOf(
-        "Dhaka" to "ঢাকা",
-        "Chittagong" to "চট্টগ্রাম",
-        "Sylhet" to "সিলেট",
-        "Rajshahi" to "রাজশাহী",
-        "Khulna" to "খুলনা",
-        "Barisal" to "বরিশাল",
-        "Rangpur" to "রংপুর",
-        "Mymensingh" to "ময়মনসিংহ"
+        "Dhaka" to "ঢাকা", "Gazipur" to "গাজীপুরে", "Shariatpur" to "শরীয়তপুর", "Madaripur" to "মাদারীপুর",
+        "Pirojpur" to "পিরোজপুর", "Barisal" to "বরিশাল", "Jhalokati" to "ঝালকাঠি", "Barguna" to "বরগুনা",
+        "Mymensingh" to "ময়মনসিংহ", "Tangail" to "টাঙ্গাইল", "Bagerhat" to "বাগেরহাট", "Jamalpur" to "জামালপুর",
+        "Sherpur" to "শেরপুর", "Manikganj" to "মানিকগঞ্জ", "Faridpur" to "ফরিদপুর", "Gopalganj" to "গোপালগঞ্জ",
+        "Sirajganj" to "সিরাজগঞ্জ", "Narail" to "নড়াইল", "Khulna" to "খুলনা", "Magura" to "মাগুরা",
+        "Rajbari" to "রাজবাড়ী", "Pabna" to "পাবনা", "Satkhira" to "সাতক্ষীরা", "Kushtia" to "কুষ্টিয়া",
+        "Jessore" to "যশোর", "Rangpur" to "রংপুর", "Jhenaidah" to "ঝিনাইদহ", "Nilphamari" to "নীলফামারী",
+        "Chuadanga" to "চুয়াডাঙ্গা", "Kurigram" to "কুড়িগ্রাম", "Gaibandha" to "গাইবান্ধা", "Rajshahi" to "রাজশাহী",
+        "Bogra" to "বগুড়া", "Meherpur" to "মেহেরপুর", "Lalmonirhat" to "লালমনিরহাট", "Chapainawabganj" to "চাঁপাইনবাবগঞ্জ",
+        "Naogaon" to "নওগাঁ", "Natore" to "নাটোর", "Dinajpur" to "দিনাজপুর", "Thakurgaon" to "ঠাকুরগাঁও",
+        "Panchagarh" to "পঞ্চগড়", "Narsingdi" to "নরসিংদী", "Narayanganj" to "নারায়ণগঞ্জ", "Munshiganj" to "মুন্সীগঞ্জ",
+        "Chandpur" to "চাঁদপুর", "Kishoreganj" to "কিশোরগঞ্জ", "Patuakhali" to "পটুয়াখালী", "Bhola" to "ভোলা",
+        "Laxmipur" to "লক্ষ্মীপুর", "Netrokona" to "নেত্রকোনা", "Comilla" to "কুমিল্লা", "Brahmanbaria" to "ব্রাহ্মণবাড়িয়া",
+        "Noakhali" to "নোয়াখালী", "Feni" to "ফেনী", "Sunamganj" to "সুনামগঞ্জ", "Habiganj" to "হবিগঞ্জ",
+        "Chittagong" to "চট্টগ্রাম", "Cox's Bazar" to "কক্সবাজার", "Sylhet" to "সিলেট", "Moulvibazar" to "মৌলভীবাজার",
+        "Khagrachari" to "খাগড়াছড়ি", "Rangamati" to "রাঙ্গামাটি", "Bandarban" to "বান্দরবান"
     )
+
+    // Permanent Dhaka schedule anchors from Islamic Foundation Bangladesh permanent prayer times
+    private val ANCHORS = mapOf(
+        0 to listOf( // January
+            AnchorRow(1, "5:16", "5:22", "12:06", "3:46", "5:27", "6:45", "6:41"),
+            AnchorRow(6, "5:18", "5:24", "12:08", "3:50", "5:30", "6:48", "6:42"),
+            AnchorRow(12, "5:20", "5:26", "12:10", "3:54", "5:34", "6:51", "6:43"),
+            AnchorRow(18, "5:20", "5:26", "12:13", "3:58", "5:38", "6:55", "6:43"),
+            AnchorRow(24, "5:19", "5:25", "12:14", "4:03", "5:43", "6:59", "6:41"),
+            AnchorRow(30, "5:18", "5:24", "12:16", "4:07", "5:47", "7:03", "6:40")
+        ),
+        1 to listOf( // February
+            AnchorRow(1, "5:18", "5:24", "12:16", "4:08", "5:48", "7:04", "6:39"),
+            AnchorRow(6, "5:16", "5:22", "12:16", "4:11", "5:52", "7:07", "6:37"),
+            AnchorRow(12, "5:13", "5:19", "12:16", "4:15", "5:55", "7:10", "6:33"),
+            AnchorRow(18, "5:09", "5:15", "12:16", "4:18", "5:59", "7:13", "6:29"),
+            AnchorRow(24, "5:05", "5:11", "12:15", "4:20", "6:02", "7:16", "6:25"),
+            AnchorRow(30, "5:02", "5:08", "12:15", "4:22", "6:04", "7:17", "6:21")
+        ),
+        2 to listOf( // March
+            AnchorRow(1, "5:01", "5:07", "12:14", "4:22", "6:05", "7:18", "6:20"),
+            AnchorRow(6, "4:57", "5:03", "12:13", "4:24", "6:07", "7:20", "6:16"),
+            AnchorRow(12, "4:51", "4:57", "12:12", "4:26", "6:10", "7:23", "6:10"),
+            AnchorRow(18, "4:45", "4:51", "12:10", "4:27", "6:12", "7:25", "6:04"),
+            AnchorRow(24, "4:39", "4:45", "12:08", "4:28", "6:14", "7:28", "5:58"),
+            AnchorRow(30, "4:31", "4:37", "12:06", "4:29", "6:17", "7:32", "5:52")
+        ),
+        3 to listOf( // April
+            AnchorRow(1, "4:29", "4:35", "12:06", "4:29", "6:18", "7:33", "5:50"),
+            AnchorRow(6, "4:24", "4:30", "12:05", "4:29", "6:20", "7:35", "5:45"),
+            AnchorRow(12, "4:18", "4:24", "12:03", "4:30", "6:23", "7:38", "5:39"),
+            AnchorRow(18, "4:11", "4:17", "12:01", "4:30", "6:25", "7:42", "5:34"),
+            AnchorRow(24, "4:05", "4:11", "12:00", "4:30", "6:28", "7:45", "5:29"),
+            AnchorRow(30, "4:00", "4:06", "11:59", "4:31", "6:30", "7:49", "5:24")
+        ),
+        4 to listOf( // May
+            AnchorRow(1, "3:59", "4:05", "11:59", "4:31", "6:31", "7:50", "5:24"),
+            AnchorRow(6, "3:53", "3:59", "11:59", "4:31", "6:33", "7:54", "5:20"),
+            AnchorRow(12, "3:49", "3:55", "11:58", "4:32", "6:36", "7:58", "5:17"),
+            AnchorRow(18, "3:46", "3:52", "11:58", "4:33", "6:39", "8:01", "5:14"),
+            AnchorRow(24, "3:42", "3:48", "11:59", "4:34", "6:42", "8:06", "5:12"),
+            AnchorRow(30, "3:40", "3:46", "11:59", "4:35", "6:45", "8:09", "5:10")
+        ),
+        5 to listOf( // June
+            AnchorRow(1, "3:39", "3:45", "12:00", "4:35", "6:46", "8:11", "5:10"),
+            AnchorRow(6, "3:38", "3:44", "12:01", "4:36", "6:47", "8:13", "5:10"),
+            AnchorRow(12, "3:38", "3:44", "12:02", "4:38", "6:50", "8:16", "5:10"),
+            AnchorRow(18, "3:38", "3:44", "12:03", "4:39", "6:51", "8:18", "5:11"),
+            AnchorRow(24, "3:39", "3:45", "12:04", "4:40", "6:53", "8:19", "5:11"),
+            AnchorRow(30, "3:43", "3:48", "12:06", "4:42", "6:53", "8:20", "5:14")
+        ),
+        6 to listOf( // July
+            AnchorRow(1, "3:42", "3:48", "12:06", "4:42", "6:54", "8:20", "5:14"),
+            AnchorRow(6, "3:44", "3:50", "12:07", "4:43", "6:54", "8:20", "5:16"),
+            AnchorRow(12, "3:48", "3:54", "12:08", "4:43", "6:53", "8:18", "5:18"),
+            AnchorRow(18, "3:51", "3:57", "12:08", "4:43", "6:52", "8:15", "5:21"),
+            AnchorRow(24, "3:55", "4:01", "12:08", "4:43", "6:49", "8:12", "5:24"),
+            AnchorRow(30, "3:59", "4:05", "12:08", "4:42", "6:46", "8:07", "5:26")
+        ),
+        7 to listOf( // August
+            AnchorRow(1, "4:00", "4:06", "12:08", "4:42", "6:45", "8:05", "5:27"),
+            AnchorRow(6, "4:04", "4:10", "12:08", "4:41", "6:42", "8:01", "5:29"),
+            AnchorRow(12, "4:07", "4:13", "12:07", "4:39", "6:38", "7:56", "5:32"),
+            AnchorRow(18, "4:11", "4:17", "12:05", "4:37", "6:33", "7:50", "5:34"),
+            AnchorRow(24, "4:14", "4:20", "12:04", "4:34", "6:28", "7:44", "5:36"),
+            AnchorRow(30, "4:17", "4:23", "12:02", "4:30", "6:22", "7:37", "5:39")
+        ),
+        8 to listOf( // September
+            AnchorRow(1, "4:18", "4:24", "12:02", "4:29", "6:20", "7:35", "5:39"),
+            AnchorRow(6, "4:21", "4:27", "12:00", "4:25", "6:15", "7:30", "5:41"),
+            AnchorRow(12, "4:23", "4:29", "11:58", "4:21", "6:09", "7:23", "5:43"),
+            AnchorRow(18, "4:26", "4:32", "11:56", "4:17", "6:03", "7:16", "5:46"),
+            AnchorRow(24, "4:28", "4:34", "11:54", "4:12", "5:57", "7:10", "5:47"),
+            AnchorRow(30, "4:30", "4:36", "11:52", "4:07", "5:50", "7:03", "5:49")
+        ),
+        9 to listOf( // October
+            AnchorRow(1, "4:31", "4:37", "11:51", "4:06", "5:49", "7:02", "5:49"),
+            AnchorRow(6, "4:33", "4:39", "11:50", "4:02", "5:44", "6:57", "5:51"),
+            AnchorRow(12, "4:35", "4:41", "11:49", "3:57", "5:39", "6:52", "5:54"),
+            AnchorRow(18, "4:37", "4:43", "11:47", "3:53", "5:33", "6:47", "5:57"),
+            AnchorRow(24, "4:40", "4:46", "11:46", "3:48", "5:28", "6:42", "6:00"),
+            AnchorRow(30, "4:42", "4:48", "11:45", "3:44", "5:24", "6:39", "6:03")
+        ),
+        10 to listOf( // November
+            AnchorRow(1, "4:43", "4:49", "11:45", "3:43", "5:23", "6:38", "6:04"),
+            AnchorRow(6, "4:46", "4:52", "11:45", "3:41", "5:20", "6:35", "6:07"),
+            AnchorRow(12, "4:49", "4:55", "11:46", "3:38", "5:17", "6:33", "6:11"),
+            AnchorRow(18, "4:52", "4:58", "11:47", "3:36", "5:15", "6:32", "6:15"),
+            AnchorRow(24, "4:56", "5:00", "11:49", "3:35", "5:14", "6:31", "6:19"),
+            AnchorRow(30, "4:59", "5:05", "11:51", "3:35", "5:14", "6:32", "6:23")
+        ),
+        11 to listOf( // December
+            AnchorRow(1, "5:00", "5:06", "11:51", "3:35", "5:14", "6:32", "6:24"),
+            AnchorRow(6, "5:03", "5:09", "11:53", "3:35", "5:14", "6:33", "6:28"),
+            AnchorRow(12, "5:07", "5:13", "11:56", "3:37", "5:16", "6:35", "6:31"),
+            AnchorRow(18, "5:10", "5:16", "11:58", "3:39", "5:18", "6:37", "6:35"),
+            AnchorRow(24, "5:13", "5:19", "12:02", "3:42", "5:21", "6:40", "6:38"),
+            AnchorRow(30, "5:15", "5:21", "12:04", "3:45", "5:25", "6:44", "6:40")
+        )
+    )
+
+    private fun parseAnchorRow(row: AnchorRow): AnchorMinutes {
+        return AnchorMinutes(
+            day = row.day,
+            sahri = parseTime(row.sahri, isPM = false),
+            fajr = parseTime(row.fajr, isPM = false),
+            dhuhr = parseDhuhr(row.dhuhr),
+            asr = parseTime(row.asr, isPM = true),
+            maghrib = parseTime(row.maghrib, isPM = true),
+            isha = parseTime(row.isha, isPM = true),
+            sunrise = parseTime(row.sunrise, isPM = false)
+        )
+    }
+
+    private fun parseTime(str: String, isPM: Boolean): Int {
+        val parts = str.split(":")
+        var hr = parts[0].toInt()
+        val min = parts[1].toInt()
+        if (isPM && hr < 12) {
+            hr += 12
+        }
+        return hr * 60 + min
+    }
+
+    private fun parseDhuhr(str: String): Int {
+        val parts = str.split(":")
+        val hr = parts[0].toInt()
+        val min = parts[1].toInt()
+        return hr * 60 + min
+    }
+
+    private fun interpolate(d: Int, d1: Int, d2: Int, v1: Int, v2: Int): Int {
+        if (d1 == d2) return v1
+        val fraction = (d - d1).toDouble() / (d2 - d1).toDouble()
+        return (v1 + fraction * (v2 - v1)).toInt()
+    }
+
+    private fun getDaysInMonth(year: Int, m: Int): Int {
+        return when (m) {
+            Calendar.JANUARY -> 31
+            Calendar.FEBRUARY -> if (year % 4 == 0) 29 else 28
+            Calendar.MARCH -> 31
+            Calendar.APRIL -> 30
+            Calendar.MAY -> 31
+            Calendar.JUNE -> 30
+            Calendar.JULY -> 31
+            Calendar.AUGUST -> 31
+            Calendar.SEPTEMBER -> 30
+            Calendar.OCTOBER -> 31
+            Calendar.NOVEMBER -> 30
+            Calendar.DECEMBER -> 31
+            else -> 30
+        }
+    }
+
+    fun getBaseDhakaTimes(year: Int, m: Int, d: Int): AnchorMinutes {
+        val monthAnchorsList = ANCHORS[m] ?: throw IllegalArgumentException("Invalid month $m")
+        val parsedAnchors = monthAnchorsList.map { parseAnchorRow(it) }
+
+        if (d <= 1) return parsedAnchors.first()
+        
+        val exactMatch = parsedAnchors.find { it.day == d }
+        if (exactMatch != null) return exactMatch
+
+        var lower: AnchorMinutes = parsedAnchors.first()
+        var upper: AnchorMinutes = parsedAnchors.last()
+        
+        if (d in 1..30) {
+            for (i in 0 until parsedAnchors.size - 1) {
+                if (d >= parsedAnchors[i].day && d <= parsedAnchors[i+1].day) {
+                    lower = parsedAnchors[i]
+                    upper = parsedAnchors[i+1]
+                    break
+                }
+            }
+            
+            return AnchorMinutes(
+                day = d,
+                sahri = interpolate(d, lower.day, upper.day, lower.sahri, upper.sahri),
+                fajr = interpolate(d, lower.day, upper.day, lower.fajr, upper.fajr),
+                dhuhr = interpolate(d, lower.day, upper.day, lower.dhuhr, upper.dhuhr),
+                asr = interpolate(d, lower.day, upper.day, lower.asr, upper.asr),
+                maghrib = interpolate(d, lower.day, upper.day, lower.maghrib, upper.maghrib),
+                isha = interpolate(d, lower.day, upper.day, lower.isha, upper.isha),
+                sunrise = interpolate(d, lower.day, upper.day, lower.sunrise, upper.sunrise)
+            )
+        } else {
+            lower = parsedAnchors.last() // day 30 anchor
+            val nextMonth = (m + 1) % 12
+            val nextMonthFirstRow = ANCHORS[nextMonth]!!.first()
+            val nextMonthFirstRowParsed = parseAnchorRow(nextMonthFirstRow)
+            
+            val daysInMonth = getDaysInMonth(year, m)
+            val lowerDay = 30
+            val upperDay = daysInMonth + 1
+            
+            return AnchorMinutes(
+                day = d,
+                sahri = interpolate(d, lowerDay, upperDay, lower.sahri, nextMonthFirstRowParsed.sahri),
+                fajr = interpolate(d, lowerDay, upperDay, lower.fajr, nextMonthFirstRowParsed.fajr),
+                dhuhr = interpolate(d, lowerDay, upperDay, lower.dhuhr, nextMonthFirstRowParsed.dhuhr),
+                asr = interpolate(d, lowerDay, upperDay, lower.asr, nextMonthFirstRowParsed.asr),
+                maghrib = interpolate(d, lowerDay, upperDay, lower.maghrib, nextMonthFirstRowParsed.maghrib),
+                isha = interpolate(d, lowerDay, upperDay, lower.isha, nextMonthFirstRowParsed.isha),
+                sunrise = interpolate(d, lowerDay, upperDay, lower.sunrise, nextMonthFirstRowParsed.sunrise)
+            )
+        }
+    }
 
     // Bengali Month Names
     val BANGLA_MONTHS = listOf(
@@ -84,124 +329,48 @@ object PrayerTimesCalculator {
     )
 
     fun getCityOffsetMinutes(city: String): Pair<Int, Int> {
-        // Returns Pair(Sehri/Fajr offset, Iftar/Maghrib offset) in minutes relative to Dhaka
         return when (city) {
-            "Chittagong" -> Pair(-5, -4)
-            "Sylhet" -> Pair(-6, -7)
-            "Rajshahi" -> Pair(7, 6)
-            "Khulna" -> Pair(5, 3)
-            "Barisal" -> Pair(2, 1)
-            "Rangpur" -> Pair(6, 4)
-            "Mymensingh" -> Pair(1, 0)
-            else -> Pair(0, 0) // Dhaka Base
+            // Adds
+            "Gazipur", "Shariatpur", "Madaripur", "Pirojpur", "Barisal", "Jhalokati", "Barguna" -> Pair(1, 1)
+            "Mymensingh", "Tangail", "Bagerhat", "Jamalpur", "Sherpur", "Manikganj" -> Pair(2, 2)
+            "Faridpur", "Gopalganj", "Sirajganj", "Narail", "Khulna" -> Pair(3, 3)
+            "Magura", "Rajbari", "Pabna" -> Pair(4, 4)
+            "Satkhira", "Kushtia", "Jessore", "Rangpur", "Jhenaidah", "Nilphamari", "Chuadanga", "Kurigram", "Gaibandha" -> Pair(6, 6)
+            "Rajshahi", "Bogra", "Meherpur", "Lalmonirhat" -> Pair(7, 7)
+            "Chapainawabganj", "Naogaon", "Natore" -> Pair(8, 8)
+            "Dinajpur", "Thakurgaon", "Panchagarh" -> Pair(6, 11) // Sahri +6, Iftar +11
+            
+            // Subtractions
+            "Narsingdi", "Narayanganj", "Munshiganj", "Chandpur" -> Pair(-1, -1)
+            "Kishoreganj", "Patuakhali", "Bhola", "Laxmipur" -> Pair(-2, -2)
+            "Netrokona", "Comilla", "Brahmanbaria" -> Pair(-3, -3)
+            "Noakhali", "Feni", "Sunamganj", "Habiganj" -> Pair(-4, -4)
+            "Chittagong" -> Pair(-5, -5)
+            "Cox's Bazar", "Sylhet", "Moulvibazar" -> Pair(-6, -6)
+            "Khagrachari", "Rangamati", "Bandarban" -> Pair(-7, -7)
+            
+            else -> Pair(0, 0)
         }
     }
 
-    /**
-     * Obtains exact or simulated prayer times for a given Gregorian date and city.
-     * Matches the June 2026 Dhaka values from the prompt screenshots perfectly.
-     */
     fun getTimesForDate(year: Int, month: Int, day: Int, city: String): PrayerDayTimes {
-        // Base prayer times for Dhaka representing typical meteorological and astronomical guidelines
-        val (fajrOffset, maghribOffset) = getCityOffsetMinutes(city)
+        val (sahriOffset, iftarOffset) = getCityOffsetMinutes(city)
+        val dhakaRow = getBaseDhakaTimes(year, month, day)
 
-        // Generate base minutes in the day for each prayer
-        // June 2026 Dhaka Schedule
-        val fMin: Int
-        val srMin: Int
-        val dMin: Int
-        val aMin: Int
-        val sMin: Int
-        val iMin: Int
-
-        if (month == Calendar.JUNE && year == 2026) {
-            // Precise values matching the screenshots
-            fMin = when {
-                day <= 2 -> 241   // 4:01
-                day <= 13 -> 240  // 4:00
-                day <= 21 -> 240  // 4:00
-                day <= 25 -> 241  // 4:01
-                day <= 28 -> 242  // 4:02
-                else -> 243       // 4:03
-            }
-            srMin = when {
-                day <= 17 -> 311  // 5:11
-                day <= 22 -> 312  // 5:12
-                day <= 25 -> 313  // 5:13
-                day <= 28 -> 314  // 5:14
-                else -> 315       // 5:15
-            }
-            dMin = when {
-                day <= 2 -> 716   // 11:56
-                day <= 8 -> 717   // 11:57
-                day <= 13 -> 718  // 11:58
-                day <= 18 -> 719  // 11:59
-                day <= 22 -> 720  // 12:00
-                day <= 27 -> 721  // 12:01
-                else -> 722       // 12:02
-            }
-            aMin = when {
-                day <= 12 -> 196  // 3:16
-                day <= 17 -> 197  // 3:17
-                day <= 22 -> 198  // 3:18
-                day <= 25 -> 199  // 3:19
-                day <= 29 -> 200  // 3:20
-                else -> 201       // 3:21
-            }
-            sMin = when {
-                day <= 1 -> 401   // 6:41
-                day <= 2 -> 402   // 6:42
-                day <= 6 -> 403   // 6:43
-                day <= 8 -> 404   // 6:44
-                day <= 11 -> 405  // 6:45
-                day <= 13 -> 406  // 6:46
-                day <= 17 -> 407  // 6:47
-                day <= 22 -> 408  // 6:48
-                else -> 409       // 6:49
-            }
-            iMin = when {
-                day <= 2 -> 472   // 7:52
-                day <= 6 -> 473   // 7:53
-                day <= 8 -> 474   // 7:54
-                day <= 10 -> 475  // 7:55
-                day <= 13 -> 476  // 7:56
-                day <= 22 -> 477  // 7:57
-                day <= 25 -> 478  // 7:58
-                day <= 27 -> 479  // 7:59
-                else -> 481       // 8:01 (or 8:00 on some days depending on rounding)
-            }
-        } else {
-            // Standard smooth annual variation approximation for Dhaka
-            val dayOfYear = getDayOfYear(year, month, day)
-            // Fajr variation: around 3:45 in Jun to 5:25 in Dec
-            val fajrBase = 270 + (45 * Math.sin((dayOfYear + 10) * 2 * Math.PI / 365)).toInt()
-            fMin = fajrBase
-            srMin = fajrBase + 71
-            dMin = 720 + (10 * Math.sin((dayOfYear - 80) * 2 * Math.PI / 365)).toInt()
-            aMin = dMin + 210
-            // Sunset variation: around 5:10 in Dec to 6:50 in Jun
-            sMin = 360 - (50 * Math.sin((dayOfYear + 10) * 2 * Math.PI / 365)).toInt()
-            iMin = sMin + 70
-        }
-
-        // Apply division offset adjustments
-        val adjustedFajr = fMin + fajrOffset
-        val adjustedSunrise = srMin + fajrOffset
-        val adjustedDhuhr = dMin
-        val adjustedAsr = aMin
-        val adjustedSunset = sMin + maghribOffset
-        val adjustedMaghrib = sMin + maghribOffset
-        val adjustedIsha = iMin + maghribOffset
-
-        // Sehri is 10 minutes before Fajr
-        val adjustedSehri = adjustedFajr - 10
-        // Iftar is Maghrib time exactly
-        val adjustedIftar = adjustedMaghrib
+        val adjustedSahri = dhakaRow.sahri + sahriOffset
+        val adjustedFajr = dhakaRow.fajr + sahriOffset
+        val adjustedSunrise = dhakaRow.sunrise + sahriOffset
+        val adjustedDhuhr = dhakaRow.dhuhr
+        val adjustedAsr = dhakaRow.asr
+        val adjustedSunset = dhakaRow.maghrib + iftarOffset
+        val adjustedMaghrib = dhakaRow.maghrib + iftarOffset
+        val adjustedIsha = dhakaRow.isha + iftarOffset
+        val adjustedIftar = dhakaRow.maghrib + iftarOffset
 
         return PrayerDayTimes(
             dateString = "$day-${month + 1}-$year",
             day = day,
-            sahri = minutesToTimeString(adjustedSehri),
+            sahri = minutesToTimeString(adjustedSahri),
             fajr = minutesToTimeString(adjustedFajr),
             sunrise = minutesToTimeString(adjustedSunrise),
             dhuhr = minutesToTimeString(adjustedDhuhr),
@@ -213,17 +382,9 @@ object PrayerTimesCalculator {
         )
     }
 
-    private fun getDayOfYear(year: Int, month: Int, day: Int): Int {
-        val cal = Calendar.getInstance()
-        cal.set(year, month, day)
-        return cal.get(Calendar.DAY_OF_YEAR)
-    }
-
     private fun minutesToTimeString(minutesInDay: Int): String {
         var hrs = (minutesInDay / 60)
         val mins = (minutesInDay % 60)
-        // Ensure 12 hours clock format or 24 hours depending on preferences
-        // Standard in BD represents e.g. "৪:০০" (4:00) or "১১:৫৭" (11:57) or "৩:১৬" (3:16)
         if (hrs > 12) {
             hrs -= 12
         }
@@ -589,5 +750,11 @@ object PrayerTimesCalculator {
         }
         val rawTime = String.format("%02d:%02d:%02d%s", formattedHour, minute, second, amPmStr)
         return convertToBengaliNumerals(rawTime)
+    }
+
+    private fun getDayOfYear(year: Int, month: Int, day: Int): Int {
+        val cal = Calendar.getInstance()
+        cal.set(year, month, day)
+        return cal.get(Calendar.DAY_OF_YEAR)
     }
 }

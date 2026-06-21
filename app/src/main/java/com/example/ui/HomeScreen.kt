@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,12 +41,41 @@ import com.example.data.UserSettings
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
+data class CountryTimeZone(
+    val englishName: String,
+    val banglaName: String,
+    val tzId: String,
+    val flag: String
+)
+
+val COUNTRY_TIMEZONES = listOf(
+    CountryTimeZone("Bangladesh", "বাংলাদেশ", "Asia/Dhaka", "🇧🇩"),
+    CountryTimeZone("Saudi Arabia", "সৌদি আরব", "Asia/Riyadh", "🇸🇦"),
+    CountryTimeZone("United Arab Emirates", "সংযুক্ত আরব আমিরাত (ইউএই)", "Asia/Dubai", "🇦🇪"),
+    CountryTimeZone("United Kingdom", "যুক্তরাজ্য (লন্ডন)", "Europe/London", "🇬🇧"),
+    CountryTimeZone("United States (New York)", "যুক্তরাষ্ট্র (নিউ ইয়র্ক)", "America/New_York", "🇺🇸"),
+    CountryTimeZone("United States (Los Angeles)", "যুক্তরাষ্ট্র (লস অ্যাঞ্জেলেস)", "America/Los_Angeles", "🇺🇸"),
+    CountryTimeZone("Malaysia", "মালয়েশিয়া", "Asia/Kuala_Lumpur", "🇲🇾"),
+    CountryTimeZone("Singapore", "সিঙ্গাপুর", "Asia/Singapore", "🇸🇬"),
+    CountryTimeZone("Qatar", "কাতার", "Asia/Qatar", "🇶🇦"),
+    CountryTimeZone("Kuwait", "কুয়েত", "Asia/Kuwait", "🇰🇼"),
+    CountryTimeZone("Oman", "ওমান", "Asia/Muscat", "🇴🇲"),
+    CountryTimeZone("Canada", "কানাডা (টরন্টো)", "America/Toronto", "🇨🇦"),
+    CountryTimeZone("Australia (Sydney)", "অস্ট্রেলিয়া (সিডনি)", "Australia/Sydney", "🇦🇺"),
+    CountryTimeZone("India", "ভারত", "Asia/Kolkata", "🇮🇳"),
+    CountryTimeZone("Italy", "ইতালি", "Europe/Rome", "🇮🇹"),
+    CountryTimeZone("Germany", "জার্মানি", "Europe/Berlin", "🇩🇪")
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     settings: UserSettings,
     onCitySelected: (String) -> Unit,
+    onSaveSettings: (UserSettings) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val isBangla = settings.language == "bangla"
@@ -244,6 +274,264 @@ fun HomeScreen(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(12.dp)
+            )
+        }
+
+        // Premium Single-Country World Clock Wallpaper Widget
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        val firstTz = settings.firstWidgetTzId
+        val calInTz = Calendar.getInstance(java.util.TimeZone.getTimeZone(firstTz))
+        val currentHourInTz = calInTz.get(Calendar.HOUR).let { if (it == 0) 12 else it }
+        val currentMinInTz = calInTz.get(Calendar.MINUTE)
+        val amPmInTz = if (calInTz.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
+        
+        val widgetHourStr = String.format(Locale.US, "%02d", currentHourInTz).let {
+            if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(it) else it
+        }
+        val widgetMinStr = String.format(Locale.US, "%02d", currentMinInTz).let {
+            if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(it) else it
+        }
+        
+        val widgetTimeStr = "$widgetHourStr:$widgetMinStr"
+        
+        val daysEng = listOf("", "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")
+        val monthsEng = listOf("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+
+        val daysBng = listOf("", "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহস্পতি", "শুক্র", "শনি")
+        val monthsBng = listOf("জানু:", "ফেব্রু:", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টে:", "অক্টো:", "নভে:", "ডিসে:")
+
+        val dayOfWeekIdx = calInTz.get(Calendar.DAY_OF_WEEK)
+        val monthIdx = calInTz.get(Calendar.MONTH)
+        val dayOfMonthVal = calInTz.get(Calendar.DAY_OF_MONTH)
+
+        val textDate = if (isBangla) {
+            val bDayNum = PrayerTimesCalculator.convertToBengaliNumerals(dayOfMonthVal.toString())
+            "${daysBng[dayOfWeekIdx]}, $bDayNum ${monthsBng[monthIdx]}"
+        } else {
+            "${daysEng[dayOfWeekIdx]}, ${monthsEng[monthIdx]} $dayOfMonthVal"
+        }
+
+        // Calculate upcoming prayer based on local time
+        val localCal = Calendar.getInstance()
+        val localHour = localCal.get(Calendar.HOUR_OF_DAY)
+        val localMin = localCal.get(Calendar.MINUTE)
+        val currentMinutes = localHour * 60 + localMin
+
+        fun parseTimeToMinutesLocal(timeStr: String, isPm: Boolean): Int {
+            return try {
+                val parts = timeStr.replace(" AM", "").replace(" PM", "").split(":")
+                var h = parts[0].toInt()
+                val m = parts[1].toInt()
+                if (isPm && h < 12) h += 12
+                h * 60 + m
+            } catch (e: Exception) {
+                0
+            }
+        }
+
+        val fajrMin = parseTimeToMinutesLocal(calculatedTimes.fajr, false)
+        val sunriseMin = parseTimeToMinutesLocal(calculatedTimes.sunrise, false)
+        val dhuhrMin = parseTimeToMinutesLocal(calculatedTimes.dhuhr, true)
+        val asrMin = parseTimeToMinutesLocal(calculatedTimes.asr, true)
+        val maghribMin = parseTimeToMinutesLocal(calculatedTimes.maghrib, true)
+        val ishaMin = parseTimeToMinutesLocal(calculatedTimes.isha, true)
+
+        val upcomingSalahName: String
+        val upcomingSalahTime: String
+
+        when {
+            currentMinutes < fajrMin -> {
+                upcomingSalahName = if (isBangla) "ফজর" else "FAJR"
+                upcomingSalahTime = calculatedTimes.fajr
+            }
+            currentMinutes < sunriseMin -> {
+                upcomingSalahName = if (isBangla) "সূর্যোদয়" else "SUNRISE"
+                upcomingSalahTime = calculatedTimes.sunrise
+            }
+            currentMinutes < dhuhrMin -> {
+                upcomingSalahName = if (isBangla) "যোহর" else "DHUHR"
+                upcomingSalahTime = calculatedTimes.dhuhr
+            }
+            currentMinutes < asrMin -> {
+                upcomingSalahName = if (isBangla) "আসর" else "ASR"
+                upcomingSalahTime = calculatedTimes.asr
+            }
+            currentMinutes < maghribMin -> {
+                upcomingSalahName = if (isBangla) "মাগরিব" else "MAGHRIB"
+                upcomingSalahTime = calculatedTimes.maghrib
+            }
+            currentMinutes < ishaMin -> {
+                upcomingSalahName = if (isBangla) "এশা" else "ISHA"
+                upcomingSalahTime = calculatedTimes.isha
+            }
+            else -> {
+                upcomingSalahName = if (isBangla) "ফজর" else "FAJR"
+                upcomingSalahTime = calculatedTimes.fajr
+            }
+        }
+
+        val formattedSalahTime = if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(upcomingSalahTime) else upcomingSalahTime
+        val upcomingSalahStr = "$upcomingSalahName: $formattedSalahTime"
+        
+        val selectedCountry = COUNTRY_TIMEZONES.find { it.tzId == firstTz } ?: COUNTRY_TIMEZONES[0]
+        val countryDisplayName = if (isBangla) selectedCountry.banglaName else selectedCountry.englishName
+        
+        var showSettingsTzSelector by remember { mutableStateOf(false) }
+        
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { showSettingsTzSelector = true }
+                .testTag("world_clock_widget"),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Background image from resource
+                Image(
+                    painter = painterResource(id = com.example.R.drawable.img_clock_bg_1781923452823),
+                    contentDescription = "Widget Leaf Background",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                
+                // Dark glassmorphism overlay to guarantee premium look and accessibility
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Black.copy(alpha = 0.35f), Color.Black.copy(alpha = 0.6f))
+                            )
+                        )
+                )
+                
+                // Content Layer
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    // Selected Country/City Tag
+                    Row(
+                        modifier = Modifier
+                            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = selectedCountry.flag, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$countryDisplayName (${firstTz.substringAfter("/").replace("_", " ")})",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Change Clock Timezone",
+                            tint = Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(11.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Large Lock Screen Styled Clock Time Text with adjacent smaller AM/PM
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = widgetTimeStr,
+                            color = Color.White,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Light,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = amPmInTz,
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light,
+                            modifier = Modifier.padding(bottom = 3.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(2.dp))
+                    
+                    // Date + Next Salah details
+                    Text(
+                        text = "$textDate  ⏰  $upcomingSalahStr",
+                        color = Color.White.copy(alpha = 0.95f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.5.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+        // Selection Dialog for Clock Country
+        if (showSettingsTzSelector) {
+            AlertDialog(
+                onDismissRequest = { showSettingsTzSelector = false },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showSettingsTzSelector = false }) {
+                        Text(text = if (isBangla) "বাতিল" else "Cancel")
+                    }
+                },
+                title = {
+                    Text(
+                        text = if (isBangla) "দেশ / টাইম জোন নির্বাচন করুন" else "Select Country / Time Zone",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 300.dp)
+                    ) {
+                        items(COUNTRY_TIMEZONES) { tzItem ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onSaveSettings(settings.copy(firstWidgetTzId = tzItem.tzId))
+                                        showSettingsTzSelector = false
+                                    }
+                                    .padding(vertical = 12.dp, horizontal = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = tzItem.flag, fontSize = 24.sp)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = if (isBangla) tzItem.banglaName else tzItem.englishName,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = tzItem.tzId,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             )
         }
 

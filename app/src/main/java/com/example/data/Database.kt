@@ -12,7 +12,9 @@ data class UserSettings(
     val themeMode: String = "light", // "system", "light", "dark"
     val notificationsEnabled: Boolean = true,
     val userName: String = "User",
-    val userTitle: String = "Namaz Goal-Setter"
+    val userTitle: String = "Namaz Goal-Setter",
+    val firstWidgetTzId: String = "Asia/Dhaka",
+    val secondWidgetTzId: String = "Asia/Riyadh"
 )
 
 @Entity(tableName = "prayer_completion")
@@ -49,7 +51,7 @@ interface NamazDao {
     fun getAllCompletionsFlow(): Flow<List<PrayerCompletion>>
 }
 
-@Database(entities = [UserSettings::class, PrayerCompletion::class], version = 1, exportSchema = false)
+@Database(entities = [UserSettings::class, PrayerCompletion::class], version = 2, exportSchema = false)
 abstract class NamazDatabase : RoomDatabase() {
     abstract fun namazDao(): NamazDao
 

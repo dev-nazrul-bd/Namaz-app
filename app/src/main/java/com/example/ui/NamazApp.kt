@@ -157,6 +157,9 @@ fun NamazApp(
                             settings = settings,
                             onCitySelected = { newCity ->
                                 viewModel.saveSettings(settings.copy(city = newCity))
+                            },
+                            onSaveSettings = { updated ->
+                                viewModel.saveSettings(updated)
                             }
                         )
                         NamazNavTab.CALENDAR -> CalendarScreen(
