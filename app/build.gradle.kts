@@ -34,12 +34,28 @@ android {
         if (base64File.exists()) {
           try {
             val cleanBase64 = base64File.readText().replace("\\s".toRegex(), "")
-            val decoded = Base64.getDecoder().decode(cleanBase64)
-            ksFile.writeBytes(decoded)
-            println("Successfully decoded debug.keystore.base64 from build.gradle.kts")
+            var decoded: ByteArray? = null
+            try {
+              decoded = Base64.getDecoder().decode(cleanBase64)
+            } catch (e: Exception) {
+              try {
+                decoded = Base64.getMimeDecoder().decode(cleanBase64)
+              } catch (e2: Exception) {
+                println("Failed to decode with standard and MIME decoder: ${e2.message}")
+              }
+            }
+            if (decoded != null) {
+              ksFile.writeBytes(decoded)
+              println("Successfully decoded and wrote debug.keystore of size: ${ksFile.length()} bytes")
+            } else {
+              println("Decoded byte array is null!")
+            }
           } catch (e: Exception) {
+            println("Exception during decoding: ${e.message}")
             e.printStackTrace()
           }
+        } else {
+          println("base64 file does not exist at: ${base64File.absolutePath}")
         }
       }
 
@@ -61,8 +77,20 @@ android {
         if (base64File.exists()) {
           try {
             val cleanBase64 = base64File.readText().replace("\\s".toRegex(), "")
-            val decoded = Base64.getDecoder().decode(cleanBase64)
-            ksFile.writeBytes(decoded)
+            var decoded: ByteArray? = null
+            try {
+              decoded = Base64.getDecoder().decode(cleanBase64)
+            } catch (e: Exception) {
+              try {
+                decoded = Base64.getMimeDecoder().decode(cleanBase64)
+              } catch (e2: Exception) {
+                println("Failed to decode with standard and MIME decoder: ${e2.message}")
+              }
+            }
+            if (decoded != null) {
+              ksFile.writeBytes(decoded)
+              println("Successfully decoded debug.keystore from debugConfig block")
+            }
           } catch (e: Exception) {
             e.printStackTrace()
           }
