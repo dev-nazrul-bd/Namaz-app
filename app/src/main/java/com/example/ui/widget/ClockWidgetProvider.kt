@@ -5,6 +5,8 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.util.TypedValue
 import android.widget.RemoteViews
 import com.example.MainActivity
 import com.example.R
@@ -59,6 +61,37 @@ class ClockWidgetProvider : AppWidgetProvider() {
         }
     }
 
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle?
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        val pendingResult = goAsync()
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+        coroutineScope.launch {
+            try {
+                val dao = NamazDatabase.getDatabase(context).namazDao()
+                val settings = dao.getSettings() ?: UserSettings()
+                updateAppWidget(context, appWidgetManager, appWidgetId, settings)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                try {
+                    updateAppWidget(context, appWidgetManager, appWidgetId, UserSettings())
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+            } finally {
+                try {
+                    pendingResult?.finish()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -85,10 +118,41 @@ class ClockWidgetProvider : AppWidgetProvider() {
         views.setTextViewText(R.id.widget_clock_text, clockTime)
         views.setTextViewText(R.id.widget_ampm_text, amPmStr)
 
+        // Hide timezone indicator completely (as requested: দেশের নাম দেখাবে না)
+        views.setViewVisibility(R.id.widget_timezone_indicator, android.view.View.GONE)
+
+        // Use widget options to dynamically scale text sizes based on available size
+        val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+        val minWidth = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH) ?: 0
+        val minHeight = options?.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT) ?: 0
+
+        val clockTextSize: Float
+        val ampmTextSize: Float
+        val subtitleTextSize: Float
+
+        if (minHeight > 0 && (minHeight < 70 || minWidth < 120)) {
+            // Extremely compact / Small widget (small font and reduced boldness visually)
+            clockTextSize = 25f
+            ampmTextSize = 9f
+            subtitleTextSize = 9f
+        } else if (minHeight > 0 && (minHeight < 90 || minWidth < 160)) {
+            // Medium widget
+            clockTextSize = 34f
+            ampmTextSize = 11f
+            subtitleTextSize = 10f
+        } else {
+            // Default/Large widget
+            clockTextSize = 42f
+            ampmTextSize = 13f
+            subtitleTextSize = 11f
+        }
+
+        views.setTextViewTextSize(R.id.widget_clock_text, TypedValue.COMPLEX_UNIT_SP, clockTextSize)
+        views.setTextViewTextSize(R.id.widget_ampm_text, TypedValue.COMPLEX_UNIT_SP, ampmTextSize)
+        views.setTextViewTextSize(R.id.widget_subtitle_text, TypedValue.COMPLEX_UNIT_SP, subtitleTextSize)
+
         // Determine matching country info with flags
-        val (flag, countryName) = getCountryInfo(tzId, isBangla)
-        val cleanCityName = tzId.substringAfter("/").replace("_", " ")
-        views.setTextViewText(R.id.widget_timezone_indicator, "$flag $countryName ($cleanCityName)")
+        val (flag, _) = getCountryInfo(tzId, isBangla)
 
         // Date Display
         val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
@@ -97,17 +161,8 @@ class ClockWidgetProvider : AppWidgetProvider() {
 
         val dateStr = formatDate(dayOfWeek, month, dayOfMonth, isBangla)
 
-        // Upcoming Salah calculations for the local city/settings
-        val localCal = Calendar.getInstance() // local time
-        val localYear = localCal.get(Calendar.YEAR)
-        val localMonth = localCal.get(Calendar.MONTH)
-        val localDay = localCal.get(Calendar.DAY_OF_MONTH)
-        val times = PrayerTimesCalculator.getTimesForDate(localYear, localMonth, localDay, settings.city)
-
-        val upcomingSalah = getUpcomingSalah(localCal, times, isBangla)
-
-        // Combine date + clean bullet separator + upcoming salah (no alarm icon)
-        val finalSubtitleText = "$dateStr • $upcomingSalah"
+        // Combine date + flag (no alarms / prayer times on the clock widget as requested)
+        val finalSubtitleText = "$dateStr $flag"
         views.setTextViewText(R.id.widget_subtitle_text, finalSubtitleText)
 
         // Click to Open Main App
@@ -147,11 +202,11 @@ class ClockWidgetProvider : AppWidgetProvider() {
     }
 
     private fun formatDate(dayOfWeek: Int, month: Int, dayOfMonth: Int, isBangla: Boolean): String {
-        val daysEng = listOf("", "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")
-        val monthsEng = listOf("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+        val daysEng = listOf("", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        val monthsEng = listOf("Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec")
 
         val daysBng = listOf("", "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহস্পতি", "শুক্র", "শনি")
-        val monthsBng = listOf("জানু:", "ফেব্রু:", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টে:", "অক্টো:", "নভে:", "ডিসে:")
+        val monthsBng = listOf("জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর")
 
         return if (isBangla) {
             val banglaDayNum = PrayerTimesCalculator.convertToBengaliNumerals(dayOfMonth.toString())

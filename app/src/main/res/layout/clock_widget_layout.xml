@@ -18,6 +18,7 @@
             android:id="@+id/widget_timezone_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="🇧🇩 Dhaka, Bangladesh"
             android:textColor="#E6E0FFFA"
             android:textSize="10sp"
@@ -33,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="bottom"
+            android:gravity="center_vertical"
             android:layout_gravity="center_horizontal">
 
             <TextView
