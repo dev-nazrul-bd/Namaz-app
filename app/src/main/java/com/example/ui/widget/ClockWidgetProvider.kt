@@ -102,24 +102,32 @@ class ClockWidgetProvider : AppWidgetProvider() {
 
         val isBangla = settings.language == "bangla"
         val tzId = settings.firstWidgetTzId // Use firstWidgetTzId as single timezone selection
-        val timeZone = TimeZone.getTimeZone(tzId)
-
-        // Date & Time in the selected timezone
-        val cal = Calendar.getInstance(timeZone)
-        val rawHour = cal.get(Calendar.HOUR)
-        val formattedHour = if (rawHour == 0) 12 else rawHour
-        val formattedMinute = cal.get(Calendar.MINUTE)
-        val amPmStr = if (cal.get(Calendar.AM_PM) == Calendar.AM) "AM" else "PM"
-
-        val clockTime = String.format(Locale.US, "%02d:%02d", formattedHour, formattedMinute).let {
-            if (isBangla) PrayerTimesCalculator.convertToBengaliNumerals(it) else it
-        }
-
-        views.setTextViewText(R.id.widget_clock_text, clockTime)
-        views.setTextViewText(R.id.widget_ampm_text, amPmStr)
 
         // Hide timezone indicator completely (as requested: দেশের নাম দেখাবে না)
         views.setViewVisibility(R.id.widget_timezone_indicator, android.view.View.GONE)
+
+        // Set the live TimeZone on the TextClock views
+        try {
+            views.setString(R.id.widget_clock_text, "setTimeZone", tzId)
+            views.setString(R.id.widget_ampm_text, "setTimeZone", tzId)
+            views.setString(R.id.widget_subtitle_text, "setTimeZone", tzId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Determine matching country info with flags
+        val (flag, _) = getCountryInfo(tzId, isBangla)
+
+        // Dynamic subtitle formats with flag embedded
+        val format12 = if (isBangla) "EEE, d MMMM '$flag'" else "EEE, MMMM d '$flag'"
+        val format24 = if (isBangla) "EEE, d MMMM '$flag'" else "EEE, MMMM d '$flag'"
+
+        try {
+            views.setCharSequence(R.id.widget_subtitle_text, "setFormat12Hour", format12)
+            views.setCharSequence(R.id.widget_subtitle_text, "setFormat24Hour", format24)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         // Use widget options to dynamically scale text sizes based on available size
         val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
@@ -150,20 +158,6 @@ class ClockWidgetProvider : AppWidgetProvider() {
         views.setTextViewTextSize(R.id.widget_clock_text, TypedValue.COMPLEX_UNIT_SP, clockTextSize)
         views.setTextViewTextSize(R.id.widget_ampm_text, TypedValue.COMPLEX_UNIT_SP, ampmTextSize)
         views.setTextViewTextSize(R.id.widget_subtitle_text, TypedValue.COMPLEX_UNIT_SP, subtitleTextSize)
-
-        // Determine matching country info with flags
-        val (flag, _) = getCountryInfo(tzId, isBangla)
-
-        // Date Display
-        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
-        val month = cal.get(Calendar.MONTH)
-        val dayOfMonth = cal.get(Calendar.DAY_OF_MONTH)
-
-        val dateStr = formatDate(dayOfWeek, month, dayOfMonth, isBangla)
-
-        // Combine date + flag (no alarms / prayer times on the clock widget as requested)
-        val finalSubtitleText = "$dateStr $flag"
-        views.setTextViewText(R.id.widget_subtitle_text, finalSubtitleText)
 
         // Click to Open Main App
         val intent = Intent(context, MainActivity::class.java)

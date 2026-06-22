@@ -37,11 +37,12 @@
             android:gravity="center_vertical"
             android:layout_gravity="center_horizontal">
 
-            <TextView
+            <TextClock
                 android:id="@+id/widget_clock_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="08:20"
+                android:format12Hour="hh:mm"
+                android:format24Hour="HH:mm"
                 android:textColor="#FFFFFF"
                 android:textSize="36sp"
                 android:fontFamily="sans-serif-medium"
@@ -51,11 +52,12 @@
                 android:shadowDx="1.5"
                 android:shadowDy="1.5" />
 
-            <TextView
+            <TextClock
                 android:id="@+id/widget_ampm_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="AM"
+                android:format12Hour="a"
+                android:format24Hour=""
                 android:textColor="#E6FFFFFF"
                 android:textSize="12sp"
                 android:fontFamily="sans-serif-light"
@@ -67,12 +69,13 @@
                 android:shadowDy="1" />
         </LinearLayout>
 
-        <!-- Subtitle Date and Next Salah (Alarm icon style mimic) -->
-        <TextView
+        <!-- Subtitle Date (TextClock to keep fully live) -->
+        <TextClock
             android:id="@+id/widget_subtitle_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SAT, JUN 20 • FAJR: 4:00 AM"
+            android:format12Hour="EEE, MMMM d"
+            android:format24Hour="EEE, MMMM d"
             android:textColor="#F2FFFFFF"
             android:textSize="10sp"
             android:gravity="center"
