@@ -106,11 +106,10 @@ class ClockWidgetProvider : AppWidgetProvider() {
         // Hide timezone indicator completely (as requested: দেশের নাম দেখাবে না)
         views.setViewVisibility(R.id.widget_timezone_indicator, android.view.View.GONE)
 
-        // Set the live TimeZone on the TextClock views
+        // Set the live TimeZone on the TextClock views (hours/minutes and AM/PM)
         try {
             views.setString(R.id.widget_clock_text, "setTimeZone", tzId)
             views.setString(R.id.widget_ampm_text, "setTimeZone", tzId)
-            views.setString(R.id.widget_subtitle_text, "setTimeZone", tzId)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -118,16 +117,16 @@ class ClockWidgetProvider : AppWidgetProvider() {
         // Determine matching country info with flags
         val (flag, _) = getCountryInfo(tzId, isBangla)
 
-        // Dynamic subtitle formats with flag embedded
-        val format12 = if (isBangla) "EEE, d MMMM '$flag'" else "EEE, MMMM d '$flag'"
-        val format24 = if (isBangla) "EEE, d MMMM '$flag'" else "EEE, MMMM d '$flag'"
+        // Date Display based on the selected timezone for the world clock
+        val timeZone = TimeZone.getTimeZone(tzId)
+        val cal = Calendar.getInstance(timeZone)
+        val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+        val month = cal.get(Calendar.MONTH)
+        val dayOfMonth = cal.get(Calendar.DAY_OF_MONTH)
 
-        try {
-            views.setCharSequence(R.id.widget_subtitle_text, "setFormat12Hour", format12)
-            views.setCharSequence(R.id.widget_subtitle_text, "setFormat24Hour", format24)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val dateStr = formatDate(dayOfWeek, month, dayOfMonth, isBangla)
+        val finalSubtitleText = "$dateStr $flag"
+        views.setTextViewText(R.id.widget_subtitle_text, finalSubtitleText)
 
         // Use widget options to dynamically scale text sizes based on available size
         val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
